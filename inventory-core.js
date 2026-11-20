@@ -19,7 +19,7 @@
   return events;
  }
  function ledger(db,productId,excludedPurchaseId=''){
-  const events=eventsFor(db,productId,excludedPurchaseId),lots=[],saleCosts={},shortages=[];
+  const events=eventsFor(db,productId,excludedPurchaseId),lots=[],saleCosts={},adjustmentCosts={},shortages=[];
   for(const e of events){
    if(e.type==='add'||e.type==='increase'){lots.push({qty:e.qty,unitCost:e.unitCost,source:e.id});continue;}
    if(e.type==='return'){
@@ -30,18 +30,23 @@
    if(e.type==='sale'||e.type==='writeoff'||e.type==='decrease'){
     const used=consumeLots(lots,e.qty);
     if(e.type==='sale')saleCosts[e.id]=used.cost;
+    else adjustmentCosts[e.id]=used.cost;
     if(used.shortage>1e-9)shortages.push({id:e.id,type:e.type,date:e.date,qty:used.shortage});
    }
   }
-  return {lots:lots.filter(x=>x.qty>1e-9),shortage:shortages.reduce((n,x)=>n+x.qty,0),shortages,saleCosts};
+  return {lots:lots.filter(x=>x.qty>1e-9),shortage:shortages.reduce((n,x)=>n+x.qty,0),shortages,saleCosts,adjustmentCosts};
  }
  function state(db,productId,excludedPurchaseId=''){return ledger(db,productId,excludedPurchaseId);}
  function availableCost(db,productId,qty){const lots=state(db,productId).lots.map(x=>({...x}));return consumeLots(lots,qty);}
+ function adjustmentCost(db,adjustmentId){
+  const adjustment=(db.adjustments||[]).find(x=>x.id===adjustmentId);if(!adjustment)return 0;
+  return ledger(db,adjustment.product).adjustmentCosts[adjustmentId]||0;
+ }
  function saleCost(db,saleId){
   const sale=(db.sales||[]).find(x=>x.id===saleId);if(!sale)return 0;
   return ledger(db,sale.product).saleCosts[saleId]||0;
  }
- const api={state,availableCost,saleCost};
+ const api={state,availableCost,saleCost,adjustmentCost};
  if(typeof module!=='undefined'&&module.exports)module.exports=api;
  root.BBInventory=api;
 })(typeof globalThis!=='undefined'?globalThis:this);
