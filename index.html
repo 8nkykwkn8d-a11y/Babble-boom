@@ -96,6 +96,7 @@
 <div class="box" style="margin-top:12px"><h2>О данных и синхронизации</h2><p class="hint">Сейчас данные хранятся только на этом устройстве. Чтобы iPhone и MacBook видели одну базу, нужно подключить облачное хранилище и настроить защищённый вход. Не вводи реальные данные бизнеса до завершения этой настройки и проверки резервного копирования.</p></div>
 </section>
 </main>
+<script src="./inventory-core.js"></script>
 <script>
 'use strict';
 const KEY='bubbleBoomManagerV2';
@@ -127,23 +128,10 @@ let db=loadDB(),calcLines=[];
 function save(){db.schemaVersion=4;try{const previous=localStorage.getItem(KEY);if(previous)localStorage.setItem(KEY+'_previous',previous);localStorage.setItem(KEY,JSON.stringify(db));$('storageNotice').textContent='Данные сохранены на этом устройстве. Предыдущая версия сохранена локально.';$('storageNotice').style.background='#eef7f0';render()}catch(e){alert('Не удалось сохранить данные. Возможно, память браузера заполнена. Скачай резервную копию.');}}
 function purchaseDelivery(p){return db.deliveries.filter(d=>d.purchaseId===p.id).reduce((s,d)=>s+num(d.amount),0)}
 function purchaseTotal(p){return num(p.baseTotal)+purchaseDelivery(p)}
-function consumeLots(lots,qty){let left=qty,cost=0;for(const lot of lots){if(left<=1e-9)break;const take=Math.min(lot.qty,left);lot.qty-=take;left-=take;cost+=take*lot.unitCost;}return {cost,shortage:Math.max(0,left)}}
-function inventoryState(p,excludedPurchaseId=''){
- const events=[];
- db.purchases.filter(x=>x.product===p.id&&x.id!==excludedPurchaseId).forEach(x=>events.push({date:x.date||'',order:0,type:'add',qty:num(x.qty),unitCost:num(x.qty)>0?purchaseTotal(x)/num(x.qty):0,id:x.id}));
- db.adjustments.filter(x=>x.product===p.id).forEach(x=>events.push({date:x.date||'',order:x.type==='return'||x.type==='increase'?2:3,type:x.type,qty:num(x.qty),unitCost:num(x.unitCost),id:x.id}));
- db.sales.filter(x=>x.product===p.id).forEach(x=>events.push({date:x.date||'',order:2,type:'sale',qty:num(x.qty),unitCost:num(x.unitCost==null?x.cost:x.unitCost),id:x.id}));
- events.sort((a,b)=>String(a.date).localeCompare(String(b.date))||a.order-b.order);
- const lots=[];let shortage=0;
- for(const e of events){
-  if(e.type==='add'||e.type==='increase'||(e.type==='return'&&db.adjustments.find(a=>a.id===e.id)?.restock!==false)){lots.push({qty:e.qty,unitCost:e.unitCost,source:e.id});continue;}
-  if(e.type==='sale'||e.type==='writeoff'||e.type==='decrease'){const used=consumeLots(lots,e.qty);shortage+=used.shortage;}
- }
- return {lots:lots.filter(x=>x.qty>1e-9),shortage};
-}
+function inventoryState(p,excludedPurchaseId=''){return BBInventory.state(db,p.id,excludedPurchaseId)}
 function stock(p){return inventoryState(p).lots.reduce((s,x)=>s+x.qty,0)}
 function avgCost(p){const lots=inventoryState(p).lots,q=lots.reduce((s,x)=>s+x.qty,0);return q?lots.reduce((s,x)=>s+x.qty*x.unitCost,0)/q:0}
-function availableCost(p,qty){const lots=inventoryState(p).lots.map(x=>({...x}));const used=consumeLots(lots,qty);return {cost:used.cost,shortage:used.shortage};}
+function availableCost(p,qty){return BBInventory.availableCost(db,p.id,qty)}
 function productName(id){return (db.products.find(p=>p.id===id)||{}).name||'Товар удалён'}
 function safeDate(d){return d||today()}
 function table(items,heads,row){if(!items.length)return '<div class="empty">Записей пока нет</div>';return '<div class="tablewrap"><table><thead><tr>'+heads.map(h=>'<th>'+h+'</th>').join('')+'</tr></thead><tbody>'+items.slice().reverse().map(row).join('')+'</tbody></table></div>'}
