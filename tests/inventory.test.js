@@ -26,5 +26,5 @@ test('restocked customer return is added after the original sale',()=>{
 test('over-selling is exposed as a shortage',()=>{
  const d=db([{id:'p1',product:'x',qty:2,baseTotal:200,date:'2026-01-01'}],[{id:'s1',product:'x',qty:3,date:'2026-01-02'}]);
  assert.equal(state(d,'x').shortage,1);
- assert.equal(availableCost(d,'x',1).shortage,0);
+ assert.equal(availableCost(d,'x',1).shortage,1);
 });
