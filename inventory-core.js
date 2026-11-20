@@ -24,7 +24,7 @@
    if(e.type==='add'||e.type==='increase'){lots.push({qty:e.qty,unitCost:e.unitCost,source:e.id});continue;}
    if(e.type==='return'){
     const a=(db.adjustments||[]).find(x=>x.id===e.id);
-    if(!a||a.restock!==false)lots.push({qty:e.qty,unitCost:e.unitCost,source:e.id});
+    if(!a||a.restock!==false){const original=(db.sales||[]).find(s=>s.id===a?.saleId);const returnUnitCost=original&&Number(original.qty)>0&&saleCosts[original.id]!=null?saleCosts[original.id]/Number(original.qty):e.unitCost;lots.push({qty:e.qty,unitCost:returnUnitCost,source:e.id});}
     continue;
    }
    if(e.type==='sale'||e.type==='writeoff'||e.type==='decrease'){
