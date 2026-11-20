@@ -25,6 +25,11 @@ jobs:
         uses: actions/checkout@v4
       - name: Run inventory regression tests
         run: node --test tests/inventory.test.js
+      - name: Check JavaScript syntax
+        run: |
+          node --check inventory-core.js
+          node -e 'const fs=require("node:fs");const html=fs.readFileSync("index.html","utf8");const scripts=[...html.matchAll(/<script>([\\s\\S]*?)<\\/script>/g)];if(!scripts.length)throw new Error("Inline app script not found");fs.writeFileSync("/tmp/bubble-boom-app.js",scripts[scripts.length-1][1]);'
+          node --check /tmp/bubble-boom-app.js
       - name: Configure Pages
         uses: actions/configure-pages@v5
         with:
