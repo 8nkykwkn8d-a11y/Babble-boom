@@ -1,7 +1,7 @@
 'use strict';
 const test=require('node:test');
 const assert=require('node:assert/strict');
-const {state,availableCost,saleCost}=require('../inventory-core.js');
+const {state,availableCost,saleCost,adjustmentCost}=require('../inventory-core.js');
 const db=(purchases=[],sales=[],deliveries=[],adjustments=[])=>({purchases,sales,deliveries,adjustments});
 test('sold-out old stock does not dilute the cost of a later purchase',()=>{
  const d=db([{id:'p1',product:'x',qty:100,baseTotal:100000,date:'2026-01-01'},{id:'p2',product:'x',qty:100,baseTotal:200000,date:'2026-02-01'}],[{id:'s1',product:'x',qty:100,date:'2026-01-15'}]);
@@ -43,4 +43,14 @@ test('returns do not restock when explicitly marked as not resalable',()=>{
 test('events on the same date apply purchase, sale, then return order',()=>{
  const d=db([{id:'p1',product:'x',qty:2,baseTotal:200,date:'2026-01-01'}],[{id:'s1',product:'x',qty:2,date:'2026-01-02'}],[],[{id:'r1',product:'x',type:'return',qty:1,date:'2026-01-02',saleId:'s1',unitCost:100,restock:true}]);
  assert.equal(state(d,'x').lots.reduce((n,l)=>n+l.qty,0),1);
+});
+test('historic write-off cost is recalculated when delivery is added later',()=>{
+ const d=db([{id:'p1',product:'x',qty:2,baseTotal:200,date:'2026-01-01'}],[],[],[{id:'w1',product:'x',type:'writeoff',qty:1,date:'2026-01-02',cost:100,unitCost:100}]);
+ assert.equal(adjustmentCost(d,'w1'),100);d.deliveries.push({id:'d1',purchaseId:'p1',amount:100});
+ assert.equal(adjustmentCost(d,'w1'),150);
+});
+test('editing a sale date before a purchase exposes historical shortage',()=>{
+ const d=db([{id:'p1',product:'x',qty:2,baseTotal:200,date:'2026-01-01'}],[{id:'s1',product:'x',qty:1,date:'2026-01-02'}]);
+ assert.equal(saleCost(d,'s1'),100);d.sales[0].date='2025-12-31';
+ assert.equal(state(d,'x').shortage,1);assert.equal(saleCost(d,'s1'),0);
 });
