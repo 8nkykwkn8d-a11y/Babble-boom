@@ -1,93 +1,50 @@
 <!doctype html>
-<html lang="ru">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>BUBBLE BOOM · Учёт</title>
+<html lang="ru"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#f8f5f4"><title>BUBBLE BOOM | Учёт</title>
 <style>
-:root{--bg:#f7f5f2;--card:#fff;--ink:#252321;--muted:#817b75;--line:#e9e4de;--accent:#d97f91;--accent2:#f7e5e9;--green:#557b67}
-*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
-header{padding:24px clamp(18px,5vw,56px);display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--line);background:#fff}
-.brand{font-size:20px;font-weight:800;letter-spacing:2px}.brand span{color:var(--accent)}.sub{color:var(--muted);font-size:12px}
-main{max-width:1180px;margin:auto;padding:28px clamp(16px,4vw,42px) 60px}
-h1{font-size:28px;margin:0 0 6px}h2{font-size:18px;margin:0 0 16px}.muted{color:var(--muted)}
-nav{display:flex;gap:8px;flex-wrap:wrap;margin:24px 0}.tab{border:1px solid var(--line);background:#fff;padding:10px 16px;border-radius:12px;cursor:pointer;color:var(--ink)}.tab.active{background:var(--ink);color:#fff;border-color:var(--ink)}
-.grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px;margin:20px 0}
-.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:18px;box-shadow:0 3px 14px #33221108}
-.metric{font-size:25px;font-weight:750;margin-top:8px}.metric-label{font-size:12px;color:var(--muted)}
-.panel{display:none}.panel.active{display:block}
-.row{display:flex;gap:12px;flex-wrap:wrap;align-items:end}.field{display:flex;flex-direction:column;gap:6px;min-width:130px;flex:1}
-label{font-size:12px;color:var(--muted)}input,select{width:100%;padding:11px 12px;border:1px solid var(--line);border-radius:10px;background:#fff;color:var(--ink);font:inherit}
-button.primary{background:var(--accent);color:#fff;border:0;border-radius:10px;padding:11px 18px;font:inherit;font-weight:650;cursor:pointer}button.secondary{background:#fff;border:1px solid var(--line);border-radius:10px;padding:10px 14px;cursor:pointer}
-.table-wrap{overflow-x:auto;margin-top:16px}table{width:100%;border-collapse:collapse;min-width:600px}th,td{text-align:left;padding:12px 10px;border-bottom:1px solid var(--line);font-size:13px}th{color:var(--muted);font-weight:600}
-.note{background:var(--accent2);padding:13px 15px;border-radius:12px;color:#754653;font-size:13px;margin:16px 0}
-.result{font-size:26px;font-weight:750;margin-top:12px}.empty{padding:28px;text-align:center;color:var(--muted)}
-@media(max-width:760px){.grid{grid-template-columns:repeat(2,minmax(0,1fr))}header{padding:18px}.metric{font-size:21px}h1{font-size:24px}}
-</style>
-</head>
-<body>
-<header><div><div class="brand">BUBBLE <span>BOOM</span></div><div class="sub">УЧЁТ И УПРАВЛЕНИЕ МАГАЗИНОМ</div></div><div class="sub">Рабочая версия 0.1</div></header>
-<main>
-<h1>Панель управления</h1><div class="muted">Себестоимость, товары и движение денег в одном месте.</div>
-<nav>
-<button class="tab active" data-tab="home">Обзор</button><button class="tab" data-tab="calc">Калькулятор</button><button class="tab" data-tab="items">Материалы</button><button class="tab" data-tab="settings">Валюты</button>
-</nav>
-<section id="home" class="panel active">
-<div class="grid">
-<div class="card"><div class="metric-label">Материалов в базе</div><div class="metric" id="countItems">0</div></div>
-<div class="card"><div class="metric-label">Валюта учёта</div><div class="metric">₩ KRW</div></div>
-<div class="card"><div class="metric-label">Курс CNY → KRW</div><div class="metric" id="homeCny">190</div></div>
-<div class="card"><div class="metric-label">Курс USD → KRW</div><div class="metric" id="homeUsd">1,400</div></div>
-</div>
-<div class="card"><h2>С чего начнём</h2><p class="muted">Добавь закупленные материалы, укажи цену и количество. Затем рассчитай себестоимость каждого набора или шара в калькуляторе.</p><button class="primary" onclick="showTab('items')">Добавить материал</button></div>
-</section>
-<section id="calc" class="panel">
-<div class="card"><h2>Калькулятор себестоимости</h2>
-<div class="row">
-<div class="field"><label>Название изделия</label><input id="productName" placeholder="Например, Bubble 24 inch"></div>
-<div class="field"><label>Материал / расходник</label><select id="materialSelect"><option value="">Выбери материал</option></select></div>
-<div class="field"><label>Количество на изделие</label><input id="usage" type="number" min="0" step="0.01" placeholder="1"></div>
-</div>
-<div class="row" style="margin-top:14px"><button class="primary" id="addLine">Добавить расход</button><button class="secondary" id="clearCalc">Очистить</button></div>
-<div class="table-wrap"><table><thead><tr><th>Материал</th><th>Расход</th><th>Цена за единицу</th><th>Сумма</th><th></th></tr></thead><tbody id="calcRows"><tr><td colspan="5" class="empty">Добавь материалы для расчёта</td></tr></tbody></table></div>
-<div class="result">Итого: <span id="totalCost">₩0</span></div><div class="muted" id="costHint">Расчёт в корейских вонах</div>
-</div>
-</section>
-<section id="items" class="panel">
-<div class="card"><h2>Материалы и закупки</h2>
-<div class="row">
-<div class="field"><label>Название</label><input id="itemName" placeholder="Bubble шар 24 inch"></div>
-<div class="field"><label>Количество в закупке</label><input id="itemQty" type="number" min="0.01" step="0.01" placeholder="100"></div>
-<div class="field"><label>Цена всей закупки</label><input id="itemPrice" type="number" min="0" step="0.01" placeholder="120000"></div>
-<div class="field"><label>Валюта оплаты</label><select id="itemCurrency"><option value="KRW">KRW ₩</option><option value="CNY">CNY ¥</option><option value="USD">USD $</option></select></div>
-<button class="primary" id="saveItem">Сохранить</button>
-</div>
-<div class="note">Цена за единицу автоматически пересчитывается в корейские воны по курсам из раздела «Валюты».</div>
-<div class="table-wrap"><table><thead><tr><th>Материал</th><th>Закуплено</th><th>Цена закупки</th><th>Валюта</th><th>Цена за единицу, ₩</th><th></th></tr></thead><tbody id="itemsRows"><tr><td colspan="6" class="empty">Пока материалов нет</td></tr></tbody></table></div>
-</div>
-</section>
-<section id="settings" class="panel">
-<div class="card"><h2>Курсы валют</h2><p class="muted">Укажи курс вручную по своему платежу или обменнику. Все суммы будут считаться в KRW.</p>
-<div class="row"><div class="field"><label>1 CNY = KRW ₩</label><input id="rateCny" type="number" min="0" step="0.01"></div><div class="field"><label>1 USD = KRW ₩</label><input id="rateUsd" type="number" min="0" step="0.01"></div><button class="primary" id="saveRates">Сохранить курсы</button></div>
-</div>
-</section>
+:root{--bg:#f7f5f4;--paper:#fff;--ink:#28252a;--muted:#827c83;--line:#ebe5e8;--pink:#d77f9c;--pale:#f8e8ee;--green:#47765e;--red:#b94e56}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}header{background:#fff;border-bottom:1px solid var(--line);padding:18px max(18px,calc((100% - 1180px)/2));display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}.brand{font-size:21px;font-weight:850;letter-spacing:1.7px}.brand span{color:var(--pink)}.sub,.muted,small{color:var(--muted)}main{max-width:1180px;margin:26px auto;padding:0 18px 60px}h1{font-size:26px;margin:0 0 4px}h2{font-size:18px;margin:0 0 15px}nav{display:flex;gap:7px;overflow:auto;padding:3px 0 12px;margin:16px 0}.tab,button{font:inherit;cursor:pointer;border:0;border-radius:11px;padding:10px 14px;font-weight:650;background:#fff;color:var(--ink)}.tab{white-space:nowrap;border:1px solid var(--line)}.tab.active,button.primary{background:var(--ink);color:#fff}.panel{display:none}.panel.active{display:block}.cards{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin:16px 0}.card,.box{background:var(--paper);border:1px solid var(--line);border-radius:16px;padding:17px}.metric{font-size:24px;font-weight:800;margin-top:5px;overflow-wrap:anywhere}.grid{display:grid;grid-template-columns:1fr 1fr;gap:13px}.field{min-width:0;flex:1}label{display:block;font-size:12px;color:var(--muted);margin:10px 0 5px}input,select{width:100%;min-width:0;padding:10px 11px;border:1px solid #e2dce0;border-radius:9px;background:#fff;font:inherit;color:var(--ink)}.row{display:flex;gap:10px;align-items:end;flex-wrap:wrap}.row .field{flex:1 1 130px}.actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:13px}button.soft{background:var(--pale);color:#7b3c54}button.danger{background:#fff0f0;color:var(--red)}button:disabled{opacity:.45;cursor:not-allowed}.tablewrap{overflow:auto;margin-top:12px}table{border-collapse:collapse;width:100%;min-width:560px}th,td{text-align:left;padding:10px 8px;border-bottom:1px solid var(--line);font-size:13px}th{color:var(--muted);font-weight:600}.empty{padding:22px;text-align:center;color:var(--muted)}.hint{font-size:12px;color:var(--muted);margin-top:10px}.pill{display:inline-block;padding:3px 8px;border-radius:20px;background:var(--pale);font-size:11px}.positive{color:var(--green)}.negative{color:var(--red)}.sectionhead{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+@media(max-width:760px){main{margin-top:17px}.cards{grid-template-columns:repeat(2,1fr)}.grid{grid-template-columns:1fr}.metric{font-size:20px}header{padding:15px 18px}}
+</style></head><body>
+<header><div><div class="brand">BUBBLE <span>BOOM</span></div><div class="sub">УПРАВЛЕНИЕ МАГАЗИНОМ</div></div><span class="pill">Версия 0.2</span></header>
+<main><h1>Панель управления</h1><div class="muted">Закупки, склад, себестоимость и продажи</div>
+<nav><button class="tab active" data-tab="home">Обзор</button><button class="tab" data-tab="products">Товары</button><button class="tab" data-tab="purchases">Закупки</button><button class="tab" data-tab="sales">Продажи</button><button class="tab" data-tab="calculator">Калькулятор</button><button class="tab" data-tab="settings">Настройки</button></nav>
+<section id="home" class="panel active"><div class="cards"><div class="card"><small>Позиций на складе</small><div class="metric" id="mStock">0</div></div><div class="card"><small>Стоимость остатков</small><div class="metric" id="mValue">₩0</div></div><div class="card"><small>Выручка</small><div class="metric" id="mRevenue">₩0</div></div><div class="card"><small>Прибыль от продаж</small><div class="metric" id="mProfit">₩0</div></div></div><div class="box"><div class="sectionhead"><h2>Последние операции</h2><span class="muted" id="operationCount">0 операций</span></div><div id="recent" class="empty">Операций пока нет</div></div><p class="hint">Данные этой версии сохраняются в браузере устройства. Для использования одновременно на телефоне и MacBook позже подключим общую базу данных.</p></section>
+<section id="products" class="panel"><div class="grid"><div class="box"><h2>Добавить товар</h2><form id="productForm"><label>Название</label><input name="name" required placeholder="Bubble 24 inch"><div class="row"><div class="field"><label>Артикул</label><input name="sku" placeholder="BB-024"></div><div class="field"><label>Категория</label><select name="category"><option>Bubble</option><option>Латексные шары</option><option>Фольгированные шары</option><option>Аксессуары</option><option>Упаковка</option><option>Другое</option></select></div></div><label>Единица учёта</label><select name="unit"><option>шт.</option><option>упаковка</option><option>рулон</option><option>комплект</option></select><div class="actions"><button class="primary">Добавить товар</button></div></form></div><div class="box"><h2>Складские остатки</h2><div id="productTable" class="empty">Добавь первый товар</div></div></div></section>
+<section id="purchases" class="panel"><div class="grid"><div class="box"><h2>Новая закупка</h2><form id="purchaseForm"><label>Товар</label><select name="product" id="purchaseProduct" required></select><div class="row"><div class="field"><label>Количество</label><input name="qty" type="number" min=".01" step=".01" required></div><div class="field"><label>Цена за единицу</label><input name="price" type="number" min="0" step=".01" required></div></div><div class="row"><div class="field"><label>Валюта</label><select name="currency"><option value="KRW">KRW ₩</option><option value="CNY">CNY ¥</option><option value="USD">USD $</option></select></div><div class="field"><label>Доп. расходы, KRW</label><input name="extra" type="number" min="0" value="0"></div></div><label>Дата</label><input name="date" type="date" required><div class="actions"><button class="primary">Сохранить закупку</button></div></form><p class="hint">Доставка, таможня и другие расходы добавляются к себестоимости партии.</p></div><div class="box"><h2>История закупок</h2><div id="purchaseTable" class="empty">Закупок пока нет</div></div></div></section>
+<section id="sales" class="panel"><div class="grid"><div class="box"><h2>Новая продажа</h2><form id="saleForm"><label>Товар</label><select name="product" id="saleProduct" required></select><div class="row"><div class="field"><label>Количество</label><input name="qty" type="number" min=".01" step=".01" required></div><div class="field"><label>Цена продажи за единицу, KRW</label><input name="price" type="number" min="0" step="1" required></div></div><label>Дата</label><input name="date" type="date" required><div class="actions"><button class="primary">Записать продажу</button></div></form><p class="hint">Себестоимость списывается по средней стоимости закупки.</p></div><div class="box"><h2>История продаж</h2><div id="saleTable" class="empty">Продаж пока нет</div></div></div></section>
+<section id="calculator" class="panel"><div class="box"><h2>Калькулятор себестоимости набора</h2><label>Название изделия</label><input id="calcName" placeholder="Например, Bubble Boom 24"><div class="row"><div class="field"><label>Материал</label><select id="calcProduct"></select></div><div class="field"><label>Расход на одно изделие</label><input id="calcQty" type="number" min=".001" step=".001" value="1"></div><button class="primary" id="addCalc">Добавить</button></div><div id="calcTable" class="empty">Добавь материалы для расчёта</div><div class="metric">Себестоимость: <span id="calcTotal">₩0</span></div><div class="hint">Расчёт использует среднюю стоимость закупки материалов на складе.</div></div></section>
+<section id="settings" class="panel"><div class="grid"><div class="box"><h2>Курсы валют</h2><p class="hint">Сколько корейских вон стоит одна единица валюты. Курсы вводятся вручную.</p><form id="ratesForm"><label>1 CNY = KRW ₩</label><input name="CNY" type="number" min=".0001" step=".01" required><label>1 USD = KRW ₩</label><input name="USD" type="number" min=".0001" step=".01" required><div class="actions"><button class="primary">Сохранить курсы</button></div></form></div><div class="box"><h2>Резервная копия</h2><p class="hint">Скачай файл с товарами, закупками, продажами и курсами. Его можно будет использовать для переноса данных.</p><div class="actions"><button class="primary" id="exportBtn">Экспорт JSON</button><button class="soft" id="csvBtn">Экспорт CSV</button></div><label>Восстановить данные из JSON</label><input id="importFile" type="file" accept=".json,application/json"><div class="hint">Импорт заменит текущие данные. Сначала сделай экспорт.</div></div></div></section>
 </main>
 <script>
-const KEY='bubbleBoomDataV1';
-let data=JSON.parse(localStorage.getItem(KEY)||'null')||{items:[],rates:{CNY:190,USD:1400}};
-let lines=[];
-const won=n=>'₩'+Number(n||0).toLocaleString('ko-KR',{maximumFractionDigits:2});
-function persist(){localStorage.setItem(KEY,JSON.stringify(data));render()}
-function toWon(price,currency){return currency==='KRW'?price:price*(data.rates[currency]||1)}
-function showTab(id){document.querySelectorAll('.tab').forEach(b=>b.classList.toggle('active',b.dataset.tab===id));document.querySelectorAll('.panel').forEach(p=>p.classList.toggle('active',p.id===id));}
-document.querySelectorAll('.tab').forEach(b=>b.addEventListener('click',()=>showTab(b.dataset.tab)));
-document.getElementById('saveItem').onclick=()=>{const name=itemName.value.trim(),qty=+itemQty.value,price=+itemPrice.value,currency=itemCurrency.value;if(!name||qty<=0||price<0){alert('Заполни название, количество и цену.');return}data.items.push({id:Date.now(),name,qty,price,currency,unit:toWon(price,currency)/qty});itemName.value='';itemQty.value='';itemPrice.value='';persist()};
-document.getElementById('saveRates').onclick=()=>{const c=+rateCny.value,u=+rateUsd.value;if(c<=0||u<=0){alert('Укажи корректные курсы.');return}data.rates={CNY:c,USD:u};data.items.forEach(x=>x.unit=toWon(x.price,x.currency)/x.qty);persist();alert('Курсы сохранены')};
-document.getElementById('addLine').onclick=()=>{const id=+materialSelect.value,qty=+usage.value,item=data.items.find(x=>x.id===id);if(!item||qty<=0){alert('Выбери материал и укажи расход.');return}lines.push({id,qty});usage.value='';renderCalc()};
-document.getElementById('clearCalc').onclick=()=>{lines=[];renderCalc()};
-function renderCalc(){const body=document.getElementById('calcRows');body.innerHTML='';let total=0;if(!lines.length)body.innerHTML='<tr><td colspan="5" class="empty">Добавь материалы для расчёта</td></tr>';lines.forEach((l,i)=>{const it=data.items.find(x=>x.id===l.id);if(!it)return;const sum=it.unit*l.qty;total+=sum;const tr=document.createElement('tr');tr.innerHTML='<td>'+escapeHtml(it.name)+'</td><td>'+l.qty+'</td><td>'+won(it.unit)+'</td><td>'+won(sum)+'</td><td><button class="secondary" data-remove="'+i+'">Удалить</button></td>';body.appendChild(tr)});body.querySelectorAll('[data-remove]').forEach(b=>b.onclick=()=>{lines.splice(+b.dataset.remove,1);renderCalc()});document.getElementById('totalCost').textContent=won(total);document.getElementById('costHint').textContent=(productName.value||'Изделие')+' · себестоимость материалов'};
-function escapeHtml(s){return s.replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
-function render(){document.getElementById('countItems').textContent=data.items.length;document.getElementById('homeCny').textContent=data.rates.CNY.toLocaleString('ko-KR');document.getElementById('homeUsd').textContent=data.rates.USD.toLocaleString('ko-KR');rateCny.value=data.rates.CNY;rateUsd.value=data.rates.USD;const s=materialSelect,old=s.value;s.innerHTML='<option value="">Выбери материал</option>';data.items.forEach(x=>{const o=document.createElement('option');o.value=x.id;o.textContent=x.name+' · '+won(x.unit)+'/ед.';s.appendChild(o)});s.value=old;const body=document.getElementById('itemsRows');body.innerHTML='';if(!data.items.length)body.innerHTML='<tr><td colspan="6" class="empty">Пока материалов нет</td></tr>';data.items.forEach(x=>{const tr=document.createElement('tr');tr.innerHTML='<td>'+escapeHtml(x.name)+'</td><td>'+x.qty+'</td><td>'+x.price.toLocaleString()+'</td><td>'+x.currency+'</td><td>'+won(x.unit)+'</td><td><button class="secondary" data-del="'+x.id+'">Удалить</button></td>';body.appendChild(tr)});body.querySelectorAll('[data-del]').forEach(b=>b.onclick=()=>{if(confirm('Удалить материал?')){data.items=data.items.filter(x=>x.id!==+b.dataset.del);lines=lines.filter(l=>l.id!==+b.dataset.del);persist();renderCalc()}});renderCalc()}
-render();
-</script>
-</body></html>
+const KEY='bubbleBoomManagerV2';
+let db=JSON.parse(localStorage.getItem(KEY)||'null')||{products:[],purchases:[],sales:[],rates:{CNY:190,USD:1400}};
+let calcLines=[];
+const $=id=>document.getElementById(id), won=n=>'₩'+Math.round(n||0).toLocaleString('ko-KR'), today=()=>new Date().toISOString().slice(0,10);
+function persist(){localStorage.setItem(KEY,JSON.stringify(db));render()}
+function rate(c){return c==='KRW'?1:Number(db.rates[c]||1)}
+function stock(p){return db.purchases.filter(x=>x.product===p.id).reduce((s,x)=>s+x.qty,0)-db.sales.filter(x=>x.product===p.id).reduce((s,x)=>s+x.qty,0)}
+function cost(p){let a=db.purchases.filter(x=>x.product===p.id),q=a.reduce((s,x)=>s+x.qty,0);return q?a.reduce((s,x)=>s+x.total,0)/q:0}
+function esc(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+function showTab(id){document.querySelectorAll('.tab').forEach(b=>b.classList.toggle('active',b.dataset.tab===id));document.querySelectorAll('.panel').forEach(p=>p.classList.toggle('active',p.id===id))}
+document.querySelectorAll('.tab').forEach(b=>b.onclick=()=>showTab(b.dataset.tab));
+function makeTable(items,heads,row){if(!items.length)return '<div class="empty">Записей пока нет</div>';return '<div class="tablewrap"><table><thead><tr>'+heads.map(h=>'<th>'+h+'</th>').join('')+'</tr></thead><tbody>'+items.slice().reverse().map(row).join('')+'</tbody></table></div>'}
+function render(){let options=db.products.map(p=>'<option value="'+p.id+'">'+esc(p.name)+'</option>').join('')||'<option value="">Сначала добавь товар</option>';['purchaseProduct','saleProduct','calcProduct'].forEach(id=>$(id).innerHTML=options);
+let qty=db.products.reduce((s,p)=>s+stock(p),0),value=db.products.reduce((s,p)=>s+Math.max(0,stock(p))*cost(p),0),revenue=db.sales.reduce((s,x)=>s+x.qty*x.price,0),profit=db.sales.reduce((s,x)=>s+x.qty*(x.price-x.cost),0);
+$('mStock').textContent=qty.toLocaleString();$('mValue').textContent=won(value);$('mRevenue').textContent=won(revenue);$('mProfit').textContent=won(profit);
+$('productTable').innerHTML=makeTable(db.products,['Товар','Артикул','Остаток','Ср. себестоимость'],p=>'<tr><td>'+esc(p.name)+'</td><td>'+esc(p.sku||'–')+'</td><td>'+stock(p)+' '+esc(p.unit)+'</td><td>'+won(cost(p))+'</td></tr>');
+$('purchaseTable').innerHTML=makeTable(db.purchases,['Дата','Товар','Кол-во','Итого'],x=>'<tr><td>'+x.date+'</td><td>'+esc((db.products.find(p=>p.id===x.product)||{}).name||'Удалённый товар')+'</td><td>'+x.qty+'</td><td>'+won(x.total)+'</td></tr>');
+$('saleTable').innerHTML=makeTable(db.sales,['Дата','Товар','Кол-во','Выручка','Прибыль'],x=>'<tr><td>'+x.date+'</td><td>'+esc((db.products.find(p=>p.id===x.product)||{}).name||'Удалённый товар')+'</td><td>'+x.qty+'</td><td>'+won(x.qty*x.price)+'</td><td>'+won(x.qty*(x.price-x.cost))+'</td></tr>');
+let ops=[...db.purchases.map(x=>({date:x.date,type:'Закупка',sum:x.total})),...db.sales.map(x=>({date:x.date,type:'Продажа',sum:x.qty*x.price}))].sort((a,b)=>b.date.localeCompare(a.date)).slice(0,8);$('operationCount').textContent=ops.length+' операций';$('recent').innerHTML=makeTable(ops,['Дата','Операция','Сумма'],x=>'<tr><td>'+x.date+'</td><td>'+x.type+'</td><td>'+won(x.sum)+'</td></tr>');
+$('ratesForm').elements.CNY.value=db.rates.CNY;$('ratesForm').elements.USD.value=db.rates.USD;renderCalc()}
+$('productForm').onsubmit=e=>{e.preventDefault();let f=new FormData(e.target);db.products.push({id:crypto.randomUUID(),name:f.get('name').trim(),sku:f.get('sku'),category:f.get('category'),unit:f.get('unit')});e.target.reset();persist()};
+$('purchaseForm').onsubmit=e=>{e.preventDefault();let f=new FormData(e.target),p=db.products.find(x=>x.id===f.get('product')),q=+f.get('qty'),total=q*(+f.get('price'))*rate(f.get('currency'))+(+f.get('extra')||0);if(!p||q<=0)return;db.purchases.push({id:crypto.randomUUID(),product:p.id,qty:q,total,date:f.get('date')||today(),currency:f.get('currency')});e.target.reset();e.target.date.value=today();persist()};
+$('saleForm').onsubmit=e=>{e.preventDefault();let f=new FormData(e.target),p=db.products.find(x=>x.id===f.get('product')),q=+f.get('qty');if(!p||q<=0)return;if(stock(p)<q){alert('На складе недостаточно товара. Остаток: '+stock(p));return}db.sales.push({id:crypto.randomUUID(),product:p.id,qty:q,price:+f.get('price'),cost:cost(p),date:f.get('date')||today()});e.target.reset();e.target.date.value=today();persist()};
+$('ratesForm').onsubmit=e=>{e.preventDefault();let f=new FormData(e.target),c=+f.get('CNY'),u=+f.get('USD');if(c<=0||u<=0)return;db.rates={CNY:c,USD:u};persist();alert('Курсы сохранены')};
+$('addCalc').onclick=()=>{let p=db.products.find(x=>x.id===$('calcProduct').value),q=+$('calcQty').value;if(!p||q<=0){alert('Выбери материал и укажи расход');return}calcLines.push({id:p.id,qty:q});renderCalc()};
+function renderCalc(){let total=0,rows=calcLines.map((l,i)=>{let p=db.products.find(x=>x.id===l.id);if(!p)return '';let sum=cost(p)*l.qty;total+=sum;return '<tr><td>'+esc(p.name)+'</td><td>'+l.qty+'</td><td>'+won(cost(p))+'</td><td>'+won(sum)+'</td><td><button class="danger" data-line="'+i+'">Удалить</button></td></tr>'}).join('');$('calcTable').innerHTML=rows?'<div class="tablewrap"><table><thead><tr><th>Материал</th><th>Расход</th><th>Цена за ед.</th><th>Сумма</th><th></th></tr></thead><tbody>'+rows+'</tbody></table></div><button class="soft" id="clearCalc">Очистить расчёт</button>':'<div class="empty">Добавь материалы для расчёта</div>';$('calcTotal').textContent=won(total);document.querySelectorAll('[data-line]').forEach(b=>b.onclick=()=>{calcLines.splice(+b.dataset.line,1);renderCalc()});let clear=$('clearCalc');if(clear)clear.onclick=()=>{calcLines=[];renderCalc()}}
+$('exportBtn').onclick=()=>download('bubble-boom-backup.json',JSON.stringify(db,null,2),'application/json');
+$('csvBtn').onclick=()=>{let rows=[['Тип','Дата','Товар','Количество','Сумма KRW'],...db.purchases.map(x=>['Закупка',x.date,(db.products.find(p=>p.id===x.product)||{}).name,x.qty,x.total]),...db.sales.map(x=>['Продажа',x.date,(db.products.find(p=>p.id===x.product)||{}).name,x.qty,x.qty*x.price])];download('bubble-boom-operations.csv','\ufeff'+rows.map(r=>r.map(v=>'"'+String(v??'').replaceAll('"','""')+'"').join(',')).join('\n'),'text/csv;charset=utf-8')};
+function download(name,data,type){let a=document.createElement('a'),u=URL.createObjectURL(new Blob([data],{type}));a.href=u;a.download=name;a.click();URL.revokeObjectURL(u)}
+$('importFile').onchange=async e=>{let file=e.target.files[0];if(!file)return;try{let d=JSON.parse(await file.text());if(!Array.isArray(d.products)||!Array.isArray(d.purchases)||!Array.isArray(d.sales)||!d.rates)throw Error();if(!confirm('Заменить текущие данные данными из файла?'))return;db=d;persist();alert('Данные восстановлены')}catch(err){alert('Не удалось прочитать резервную копию')}}; 
+document.querySelectorAll('input[type=date]').forEach(x=>x.value=today());render();
+</script></body></html>
