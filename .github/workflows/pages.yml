@@ -28,7 +28,7 @@ jobs:
       - name: Check JavaScript syntax
         run: |
           node --check inventory-core.js
-          node -e 'const fs=require("node:fs");const html=fs.readFileSync("index.html","utf8");const scripts=[...html.matchAll(/<script>([\\s\\S]*?)<\\/script>/g)];if(!scripts.length)throw new Error("Inline app script not found");fs.writeFileSync("/tmp/bubble-boom-app.js",scripts[scripts.length-1][1]);'
+          node -e 'const fs=require("node:fs");const html=fs.readFileSync("index.html","utf8");const start=html.lastIndexOf("<script>");if(start<0)throw new Error("Inline app script not found");const bodyStart=start+8;const end=html.indexOf("</script>",bodyStart);if(end<0)throw new Error("Inline app script is not closed");fs.writeFileSync("/tmp/bubble-boom-app.js",html.slice(bodyStart,end));'
           node --check /tmp/bubble-boom-app.js
       - name: Configure Pages
         uses: actions/configure-pages@v5
